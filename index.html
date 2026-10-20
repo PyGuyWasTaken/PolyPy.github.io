@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PolyPy — Build worlds with code</title>
+  <meta name="description" content="PolyPy is a simple, creative scripting language for building interactive worlds, tools, and games." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg-soft: #141824;
+      --surface: #171c29;
+      --surface-2: #1c2233;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #eef2ff;
+      --muted: #a8b3c7;
+      --cyan: #22d3ee;
+      --cyan-strong: #00d4ff;
+      --purple: #a855f7;
+      --magenta: #f472b6;
+      --radius: 18px;
+      --font: "Plus Jakarta Sans", system-ui, sans-serif;
+      --mono: "JetBrains Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background:
+        radial-gradient(900px 500px at 80% -10%, rgba(34, 211, 238, 0.14), transparent),
+        radial-gradient(700px 500px at 10% 20%, rgba(168, 85, 247, 0.10), transparent),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 40px));
+      margin-inline: auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(18px);
+      background: rgba(15, 17, 23, 0.78);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      font-size: 1.15rem;
+    }
+
+    .logo-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-weight: 700;
+      color: #04121a;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      box-shadow: 0 0 24px rgba(34, 211, 238, 0.35);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      font-size: 0.94rem;
+      color: var(--muted);
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 12px 22px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: 1px solid transparent;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      color: #04121a;
+      background: linear-gradient(135deg, var(--cyan), #67e8f9);
+      box-shadow: 0 10px 30px rgba(34, 211, 238, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 38px rgba(34, 211, 238, 0.4);
+    }
+
+    .btn-ghost {
+      color: var(--text);
+      border-color: var(--border);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .btn-ghost:hover {
+      transform: translateY(-2px);
+      border-color: rgba(34, 211, 238, 0.5);
+      background: rgba(34, 211, 238, 0.08);
+    }
+
+    .hero {
+      position: relative;
+      padding: 90px 0 80px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      background: rgba(34, 211, 238, 0.07);
+      color: var(--cyan);
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      font-size: clamp(3.2rem, 8vw, 6rem);
+      line-height: 0.95;
+      letter-spacing: -0.055em;
+      font-weight: 800;
+    }
+
+    .hero-title span {
+      background: linear-gradient(100deg, var(--cyan), var(--purple), var(--magenta));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .tagline {
+      margin-top: 18px;
+      font-size: clamp(1.25rem, 3vw, 1.75rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin-top: 16px;
+      max-width: 540px;
+      color: var(--muted);
+      font-size: 1.06rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 32px;
+    }
+
+    .code-card {
+      position: relative;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(28, 34, 51, 0.95), rgba(15, 17, 23, 0.98));
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(34, 211, 238, 0.08);
+      overflow: hidden;
+    }
+
+    .code-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(120deg, rgba(34, 211, 238, 0.5), transparent 35%, rgba(168, 85, 247, 0.45));
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      padding: 1px;
+      pointer-events: none;
+    }
+
+    .code-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #febc2e; }
+    .dot.green { background: #28c840; }
+
+    .file-name {
+      margin-left: 10px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    pre {
+      padding: 22px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      line-height: 1.75;
+      color: #dbe4f5;
+    }
+
+    .kw { color: #c084fc; }
+    .fn { color: #22d3ee; }
+    .str { color: #86efac; }
+    .num { color: #fbbf24; }
+    .cm { color: #64748b; font-style: italic; }
+    .var { color: #f9a8d4; }
+
+    section {
+      padding: 78px 0;
+    }
+
+    .section-head {
+      max-width: 640px;
+      margin-bottom: 44px;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      font-weight: 800;
+    }
+
+    .section-head p {
+      margin-top: 14px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      padding: 26px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(23, 28, 41, 0.9), rgba(15, 17, 23, 0.9));
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(34, 211, 238, 0.4);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), 0 0 30px rgba(34, 211, 238, 0.08);
+    }
+
+    .icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.25rem;
+      margin-bottom: 18px;
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.2);
+    }
+
+    .card h3 {
+      font-size: 1.08rem;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .terminal {
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: #0b0d13;
+      overflow: hidden;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+    }
+
+    .terminal pre {
+      padding: 26px;
+    }
+
+    .prompt { color: var(--cyan); font-weight: 700; }
+    .comment { color: #64748b; }
+    .command { color: #e2e8f0; }
+    .output { color: #86efac; }
+
+    .lang-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .lang-card {
+      padding: 24px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: border-color 0.25s ease, transform 0.25s ease;
+    }
+
+    .lang-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(168, 85, 247, 0.45);
+    }
+
+    .lang-card h3 {
+      font-size: 1rem;
+      margin-bottom: 12px;
+      color: var(--cyan);
+    }
+
+    .docs-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 26px;
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    .docs-link:hover {
+      gap: 12px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 38px 0;
+      background: rgba(15, 17, 23, 0.7);
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 22px;
+    }
+
+    .footer-links a:hover {
+      color: var(--cyan);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .grid,
+      .lang-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 60px;
+      }
+
+      section {
+        padding: 60px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="logo" href="#">
+        <span class="logo-mark">P</span>
+        PolyPy
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#example">Examples</a>
+        <a href="#install">Install</a>
+        <a href="#language">Language</a>
+        <a href="https://github.com/polypy" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <a class="btn btn-primary" href="#install">Get Started</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container hero-grid">
+      <div class="reveal">
+        <span class="eyebrow">✨ A simple, creative scripting language</span>
+        <h1>Poly<span>Py</span></h1>
+        <p class="tagline">Build worlds with code.</p>
+        <p>
+          PolyPy is a lightweight language for creative scripting, interactive tools,
+          and world-building. Write clear, readable code and turn ideas into things
+          people can explore.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#install">Get Started</a>
+          <a class="btn btn-ghost" href="https://github.com/polypy" target="_blank" rel="noopener">View on GitHub</a>
+        </div>
+      </div>
+
+      <div class="code-card reveal">
+        <div class="code-top">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="file-name">hello.polypy</span>
+        </div>
+<pre><code><span class="cm"># Your first PolyPy world</span>
+<span class="kw">let</span> <span class="var">name</span> = <span class="str">"Explorer"</span>
+
+<span class="fn">print</span>(<span class="str">"Welcome to PolyPy,"</span> + <span class="var">name</span>)
+
+<span class="kw">let</span> <span class="var">bricks</span> = <span class="num">12</span>
+
+<span class="kw">if</span> <span class="var">bricks</span> > <span class="num">10</span> {
+  <span class="fn">print</span>(<span class="str">"You have enough bricks to build!"</span>)
+}</code></pre>
+      </div>
+    </div>
+  </header>
+
+  <section id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Made for creators</h2>
+        <p>PolyPy keeps the essentials simple, so you can focus on building rather than fighting the language.</p>
+      </div>
+
+      <div class="grid">
+        <article class="card reveal">
+          <div class="icon">📖</div>
+          <h3>Readable syntax</h3>
+          <p>PolyPy uses clean, familiar syntax that is easy to read, write, and change.</p>
+        </article>
+
+        <article class="card reveal">
+          <div class="icon">🚀</div>
+          <h3>Easy to learn</h3>
+          <p>Start with a few lines, then grow into variables, functions, loops, and larger projects.</p>
+        </article>
+
+        <article class="card reveal">
+          <div class="icon">🌍</div>
+          <h3>Built for worlds</h3>
+          <p>Great for creative scripting, games, interactive stories, tools, and world-building.</p>
+        </article>
+
+        <article class="card reveal">
+          <div class="icon">⚡</div>
+          <h3>Lightweight & fast</h3>
+          <p>Run scripts directly with the PolyPy command or experiment in the interactive REPL.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="example">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Real PolyPy code</h2>
+        <p>This example builds a small world out of bricks and prints what happened.</p>
+      </div>
+
+      <div class="code-card reveal">
+        <div class="code-top">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="file-name">world.polypy</span>
+        </div>
+<pre><code><span class="cm"># Create a tiny brick world</span>
+<span class="kw">let</span> <span class="var">world</span> = <span class="str">"Brick Town"</span>
+<span class="kw">let</span> <span class="var">bricks</span> = <span class="num">24</span>
+
+<span class="kw">func</span> <span class="fn">build_wall</span>(<span class="var">amount</span>) {
+  <span class="kw">let</span> <span class="var">built</span> = <span class="num">0</span>
+
+  <span class="kw">while</span> <span class="var">built</span> < <span class="var">amount</span> {
+    <span class="var">built</span> = <span class="var">built</span> + <span class="num">1</span>
+  }
+
+  <span class="fn">print</span>(<span class="str">"Built"</span> + <span class="var">built</span> + <span class="str">"bricks in"</span> + <span class="var">world</span>)
+}
+
+<span class="fn">build_wall</span>(<span class="var">bricks</span>)</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Install and run</h2>
+        <p>PolyPy scripts use the <strong>.polypy</strong> extension and run with the native <strong>polypy</strong> command.</p>
+      </div>
+
+      <div class="terminal reveal">
+        <div class="code-top">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="file-name">Terminal</span>
+        </div>
+<pre><code><span class="comment"># Install PolyPy</span>
+<span class="prompt">$</span> <span class="command">pip install polypy</span>
+
+<span class="comment"># Run a PolyPy script</span>
+<span class="prompt">$</span> <span class="command">polypy hello.polypy</span>
+<span class="output">Welcome to PolyPy, Explorer</span>
+
+<span class="comment"># Start the interactive REPL</span>
+<span class="prompt">$</span> <span class="command">polypy</span></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="language">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Language overview</h2>
+        <p>A quick look at the building blocks of PolyPy.</p>
+      </div>
+
+      <div class="lang-grid">
+        <article class="lang-card reveal">
+          <h3>Variables</h3>
+          <div class="code-card">
+<pre><code><span class="kw">let</span> <span class="var">player</span> = <span class="str">"Nova"</span>
+<span class="kw">let</span> <span class="var">score</span> = <span class="num">100</span></code></pre>
+          </div>
+        </article>
+
+        <article class="lang-card reveal">
+          <h3>Functions</h3>
+          <div class="code-card">
+<pre><code><span class="kw">func</span> <span class="fn">greet</span>(<span class="var">name</span>) {
+  <span class="fn">print</span>(<span class="str">"Hello,"</span> + <span class="var">name</span>)
+}</code></pre>
+          </div>
+        </article>
+
+        <article class="lang-card reveal">
+          <h3>Conditions</h3>
+          <div class="code-card">
+<pre><code><span class="kw">if</span> <span class="var">score</span> > <span class="num">50</span> {
+  <span class="fn">print</span>(<span class="str">"Nice job!"</span>)
+} <span class="kw">else</span> {
+  <span class="fn">print</span>(<span class="str">"Keep going!"</span>)
+}</code></pre>
+          </div>
+        </article>
+
+        <article class="lang-card reveal">
+          <h3>Loops</h3>
+          <div class="code-card">
+<pre><code><span class="kw">let</span> <span class="var">count</span> = <span class="num">0</span>
+
+<span class="kw">while</span> <span class="var">count</span> < <span class="num">5</span> {
+  <span class="fn">print</span>(<span class="var">count</span>)
+  <span class="var">count</span> = <span class="var">count</span> + <span class="num">1</span>
+}</code></pre>
+          </div>
+        </article>
+      </div>
+
+      <a class="docs-link reveal" href="https://github.com/polypy" target="_blank" rel="noopener">
+        Read the full documentation →
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-inner">
+      <p>PolyPy — Build worlds with code.</p>
+      <div class="footer-links">
+        <a href="https://github.com/polypy" target="_blank" rel="noopener">GitHub</a>
+        <a href="#install">Install</a>
+        <a href="#language">Docs</a>
+        <span>MIT License</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.15
+    });
+
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+  </script>
+</body>
+</html>
